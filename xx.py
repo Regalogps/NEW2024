@@ -94,7 +94,7 @@ class CustomWindow(QMainWindow):
 
 
 
-        # Inicializar variables para el movimiento de la ventana
+        # Inicializar variables para el movimiento de la ventana hhhh
         self.dragging = False
         self.drag_position = None
 
