@@ -35,7 +35,7 @@ def generar_dataframe(viento_existentes_1, valor_exis_1, viento_faltantes, df_to
     # Crear nueva columna con valores con máximo 2 decimales
     df_total[f'  {nombre_columna}'] = np.around(df_total[nombre_columna], decimals=1)
     # Renombrar la columna 
-    df_total = df_total.rename(columns={f'  {nombre_columna}': 'dec.'})
+    #df_total = df_total.rename(columns={f'  {nombre_columna}': 'dec.'})
 
     return df_total
 
@@ -54,7 +54,7 @@ excep_1_ = [num for num in rango_completo if num not in excep_1]
 # VIENTO EN CONTRA:
 #valor_existentes_0  = [0, -3, 8, 9, 16, 18, 22, 25, 31, 32, 38, 40, 47, 49, 55, 57, 61, 63, 68, 70, 75]                     # 6:00
 
-valor_exis_1  = [0, -3, 8, 9, 16, 18, 22, 25, 31, 32, 38, 40, 47, 49, 55, 57, 61, 63, 68, 70, 75]                      # 6:30
+valor_exis_1  = [0, -3, 8, 9, 16, 18, 22, 25, 31, 32, 38, 40, 47, 49, 55, 57, 61, 63, 68, 70, 75]                      # 6:45
 valor_exis_2  = [0, 4, 10, 12, 19, 22, 27, 29, 36, 38, 45, 47, 57, 59, 66, 68, 76, 77, 85, 87, 95]                     # 7:30
 valor_exis_3  = [0, 3, 9, 11, 18, 21, 28, 30, 38, 40, 49, 51, 62, 64, 75, 77, 89, 90, 103, 105, 115]                   # 8:15
 valor_exis_4  = [0, 1, 8, 9, 15, 18, 24, 26, 36, 37, 46, 48, 61, 63, 75, 80, 93, 96, 113, 120, 139]                    # 9:00
@@ -65,7 +65,7 @@ valor_exis_8  = [0, -1, -4, -4, -7, -8, -11, -12, -15, -16, -19, -20, -23, -23, 
 valor_exis_9  = [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -62]   # 12:00
 
 # VIENTO A FAVOR:
-valor_exis_1_  = [0, 1, 3, 3, 5, 6, 8, 9, 12, 12, 14, 15, 20, 21, 23, 25, 28, 30, 32, 32, 35]                          # 6:30   -  5:15
+valor_exis_1_  = [0, 1, 3, 3, 5, 6, 8, 9, 12, 12, 14, 15, 20, 21, 23, 25, 28, 30, 32, 32, 35]                          # 6:45   -  5:15
 valor_exis_2_  = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 3, 3, 4, 4, 5, 5, 6, 6, 7]                                       # 7:30   -  4:30
 valor_exis_3_  = [0, -1, -4, -4, -6, -7, -9, -10, -12, -13, -14, -14, -15, -15, -16, -16, -18, -18, -20, -20, -22]     # 8:15   -  3:45
 valor_exis_4_  = [0, -2, -6, -7, -11, -13, -17, -18, -22, -23, -25, -28, -30, -31, -35, -36, -40, -40, -44, -44, -46]  # 9:00   -  3:00
@@ -98,7 +98,30 @@ for i, valor in enumerate(lista_names):
 for i in range(len(list_valour)):
     df_total = df_total.drop(columns=[lista_names[i]])
 
-df_total = df_total.drop(columns="dec.")
+# Esto elimina o quita de vision la columna con el calculo exacto en decimales
+#df_total = df_total.drop(columns="dec.")
+
 # Mostrar el DataFrame final
-print(df_total.to_string(index=False))
-#print(df_total[['Viento'," (12:22)"]].join(df_total.iloc[:, [-1]]).to_string(index=False))
+#print(df_total.to_string(index=False))
+
+print(df_total[['Viento', " (12:22)"]] .join(df_total.iloc[:, [-1]]) .to_string(index=False))
+
+
+# Datos originales
+#numero_viento_0 = list(range(51)) # No es necesario porque la lista ya existe
+
+valores_6_45 = df_total[' (12:00)'].tolist()
+
+valores_5_15 = df_total[' (12:45)'].tolist()
+
+# Grados entre los que interpolaremos
+grados = [90, 67.5]
+grados_objetivo = [78.75]
+
+# Interpolación entre los grados 0° y 45° para obtener el valor correspondiente al grado 22°, 23°, 24°, 25°
+interpolador = interp1d(grados, np.vstack([valores_6_45, valores_5_15]), axis=0)
+
+# Calcular los valores interpolados para los grados objetivo
+valores_interpolados = interpolador(grados_objetivo)
+
+print(valores_interpolados)
