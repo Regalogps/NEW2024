@@ -2,6 +2,53 @@ import numpy as np
 from scipy.interpolate import interp1d
 import pandas as pd
 
+
+# Definir la clase para manejar la generación de columnas intermedias e interpolación
+class InterpoladorDataFrame:
+
+    def __init__(self, df):
+        """Inicializa la clase con un DataFrame"""
+        self.df = df
+
+    def generar_rango_horario(self, start_time, end_time):
+        """Genera un rango de tiempo en minutos entre dos horas"""
+        start =      pd .to_datetime (start_time, format="(%H:%M)")
+        end =        pd .to_datetime (end_time, format="(%H:%M)")
+        time_range = pd .date_range  (start=start, end=end, freq='T').time  # Frecuencia en minutos ('T')
+        
+        return time_range
+
+    def generar_columnas_intermedias(self, columnas_horario):
+        """Genera columnas intermedias entre las horas especificadas"""
+        new_columns = {}
+
+        for i in range(len(columnas_horario) - 1):
+            # Obtener el rango de horas entre dos columnas consecutivas
+            rango_horario = self.generar_rango_horario(columnas_horario[i], columnas_horario[i+1])
+
+            # Generar las columnas intermedias
+            for time in rango_horario[1:-1]:  # Ignorar la primera y última hora
+                time_str = time.strftime("(%H:%M)")  # Formato de 24 horas
+                new_columns[time_str] = [np.nan] * len(self.df)  # Inicializar con NaN
+        
+        # Agregar las nuevas columnas al DataFrame usando pd.concat para eficiencia
+        new_df = pd.DataFrame(new_columns)
+        self.df = pd.concat([self.df, new_df], axis=1)
+        
+        # Ordenar el DataFrame según los nombres de las columnas
+        self.df = self.df.reindex(sorted(self.df.columns, key=lambda x: pd.to_datetime(x.strip('()'), format='%H:%M')), axis=1)
+
+    def interpolar_datos(self):
+        """Realiza la interpolación lineal en el DataFrame"""
+        self.df.interpolate(method='linear', axis=1, inplace=True)
+
+    def obtener_dataframe(self):
+        """Devuelve el DataFrame final"""
+        return self.df
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
+
 class InterpoladorViento:
 
     def __init__(self, viento_existentes, valores_existentes, nombres_columnas):
@@ -73,7 +120,20 @@ class InterpoladorViento:
 
 
     def mostrar_dataframe(self):
+        # Separar las columnas que representan horas de las que no
+        columnas_hora = [col for col in self.df_total.columns if col.startswith('(') and col.endswith(')')]
+        otras_columnas = [col for col in self.df_total.columns if col not in columnas_hora]
+        
+        # Ordenar las columnas de horas
+        columnas_hora_ordenadas = sorted(columnas_hora, key=lambda x: pd .to_datetime(x.strip('()'), format='%H:%M'))
+        
+        # Reindexar el DataFrame con las columnas ordenadas y luego las otras columnas
+        self.df_total = self.df_total.reindex(columns=otras_columnas + columnas_hora_ordenadas)
+        
+        # Mostrar el DataFrame
         print(self.df_total.to_string(index=False))
+
+
 
 
 
@@ -108,16 +168,40 @@ nombres_columnas = ["(06:45)", "(07:30)", "(08:15)", "(09:00)", "(09:45)", "(10:
                     "(05:15)", "(04:30)", "(03:45)", "(03:00)", "(02:15)", "(01:30)",  "(00:45)", "(00:22)"]
 
 # Instanciar la clase
-dataframe_original = InterpoladorViento(viento_existentes_1, valores_existentes, nombres_columnas)
+df_original = InterpoladorViento(viento_existentes_1, valores_existentes, nombres_columnas)
 
 # Crear DataFrame completo
-dataframe_original. crear_dataframe_total()
+df_original. crear_dataframe_total()
 
 # Añadir el valor para las 6:00
-dataframe_original .agregar_valor_6_00('(05:15)', '(06:45)', 292.5, 247.5, [270], "(06:00)")
+df_original .agregar_valor_6_00('(05:15)', '(06:45)', 292.5, 247.5, [270], "(06:00)")
 
 # Mostrar el DataFrame final
-#dataframe_original .mostrar_dataframe()
+df_original .mostrar_dataframe()
+
+
+
+
+# Crear una instancia de la clase, pasando el DataFrame como argumento
+interpolador = InterpoladorDataFrame(df_original .df_total)
+
+# Definir las columnas horarias que ya tienen datos
+columnas_horario = [col for col in df_original .df_total .columns if col != 'Viento']
+
+# Generar las columnas intermedias
+interpolador.generar_columnas_intermedias(columnas_horario)
+
+# Realizar la interpolación en las nuevas columnas
+interpolador.interpolar_datos()
+
+# Obtener el DataFrame final con las columnas intermedias e interpoladas
+df_resultante = interpolador.obtener_dataframe()
+
+# Mostrar el DataFrame resultante
+print(f"Total de columnas en el DataFrame: {df_resultante.shape[1]}")
+print(df_resultante)
+
+
 
 #___________________________________________________________________________________________
 
@@ -143,7 +227,7 @@ def ordenar_por_horarios_grados(df):
 #______________________________________________________________________________________________
 
 # ORDENAR POR HORARIOS
-df_ordenado = ordenar_por_horarios_grados(dataframe_original .df_total)
+#df_ordenado = ordenar_por_horarios_grados(dataframe_original .df_total)  # Aqui se separa el dataframe
 
 # Mostrar el DataFrame ordenado
 #print(df_ordenado.to_string(index=False))
@@ -156,7 +240,7 @@ def get_hour(col_name):
     return int(hour)
 
 # Dividir el DataFrame
-df_favor = df_ordenado [['Viento'] + [col for col in df_ordenado .columns if col.startswith('(') and (get_hour(col) >= 12 or get_hour(col) < 6)]]
+"""df_favor = df_ordenado [['Viento'] + [col for col in df_ordenado .columns if col.startswith('(') and (get_hour(col) >= 12 or get_hour(col) < 6)]]
 df_contra = df_ordenado [['Viento'] + [col for col in df_ordenado .columns if col.startswith('(') and get_hour(col) >= 6 and get_hour(col) < 12]]
 
 
@@ -165,50 +249,4 @@ print("DataFrame 1: VIENTO A FAVOR")
 print(df_favor .to_string(index=False))
 
 print("\nDataFrame 2: VIENTO EN CONTRA")
-print(df_contra .to_string(index=False))
-
-
-
-
-
-# Definir la clase para manejar la generación de columnas intermedias e interpolación
-class InterpoladorDataFrame:
-
-    def __init__(self, df):
-        """Inicializa la clase con un DataFrame"""
-        self.df = df
-
-    def generar_rango_horario(self, start_time, end_time):
-        """Genera un rango de tiempo en minutos entre dos horas"""
-        start =      pd .to_datetime (start_time, format="(%H:%M)")
-        end =        pd .to_datetime (end_time, format="(%H:%M)")
-        time_range = pd .date_range  (start=start, end=end, freq='T').time  # Frecuencia en minutos ('T')
-        return time_range
-
-    def generar_columnas_intermedias(self, columnas_horario):
-        """Genera columnas intermedias entre las horas especificadas"""
-        new_columns = {}
-
-        for i in range(len(columnas_horario) - 1):
-            # Obtener el rango de horas entre dos columnas consecutivas
-            rango_horario = self.generar_rango_horario(columnas_horario[i], columnas_horario[i+1])
-
-            # Generar las columnas intermedias
-            for time in rango_horario[1:-1]:  # Ignorar la primera y última hora
-                time_str = time.strftime("(%H:%M)")  # Formato de 24 horas
-                new_columns[time_str] = [np.nan] * len(self.df)  # Inicializar con NaN
-        
-        # Agregar las nuevas columnas al DataFrame usando pd.concat para eficiencia
-        new_df = pd.DataFrame(new_columns)
-        self.df = pd.concat([self.df, new_df], axis=1)
-        
-        # Ordenar el DataFrame según los nombres de las columnas
-        self.df = self.df.reindex(sorted(self.df.columns, key=lambda x: pd.to_datetime(x.strip('()'), format='%H:%M')), axis=1)
-
-    def interpolar_datos(self):
-        """Realiza la interpolación lineal en el DataFrame"""
-        self.df.interpolate(method='linear', axis=1, inplace=True)
-
-    def obtener_dataframe(self):
-        """Devuelve el DataFrame final"""
-        return self.df
+print(df_contra .to_string(index=False))"""

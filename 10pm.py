@@ -50,7 +50,8 @@ data = {
     "(00:00)": np.random.rand(20),  # Columna (12:00)
     "(01:10)": np.random.rand(20),   # Columna (1:10)
     "(03:00)": np.random.rand(20),   # Columna (3:00)
-    "(04:25)": np.random.rand(20)    # Columna (4:25)
+    "(04:25)": np.random.rand(20),   # Columna (4:25)
+    "(06:55)": np.random.rand(20)    # Columna (4:25)
 }
 df = pd.DataFrame(data)
 
@@ -58,7 +59,7 @@ df = pd.DataFrame(data)
 interpolador = InterpoladorDataFrame(df)
 
 # Definir las columnas horarias que ya tienen datos
-columnas_horario = ["(00:00)", "(01:10)", "(03:00)", "(04:25)"]
+columnas_horario = ["(00:00)", "(01:10)", "(03:00)", "(04:25)", "(06:55)"]
 
 # Generar las columnas intermedias
 interpolador.generar_columnas_intermedias(columnas_horario)
