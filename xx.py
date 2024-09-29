@@ -1,7 +1,9 @@
+
 from PyQt5.QtWidgets import (QApplication, QWidget, QGridLayout, QPushButton, QHBoxLayout,
                              QSpacerItem, QSizePolicy, QMainWindow, QGraphicsView, QLabel, QVBoxLayout, QLineEdit)
 from PyQt5.QtGui import QPainter, QPen, QColor, QPixmap, QBrush, QMouseEvent
 from PyQt5.QtCore import Qt, QPoint, QPointF   # Importa clases de PyQt5 para el manejo de eventos y puntos
+
 
 class CustomWindow(QMainWindow):
     def __init__(self):

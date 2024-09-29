@@ -1,4 +1,5 @@
 from imports import *
+# ordenar sus importaciones
 
 # Define una clase llamada Reloj que hereda de QWidget
 class Reloj(QWidget):
