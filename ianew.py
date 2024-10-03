@@ -44,10 +44,15 @@ class InterpoladorDataFrame:
             ['Viento'] + sorted(columnas_a_ordenar, key=lambda x: pd.to_datetime(x.strip('()'), format='%H:%M')),
             axis=1
         )
+        
 
     def interpolar_datos(self):
         """Realiza la interpolación lineal en el DataFrame"""
         self.df.interpolate(method='linear', axis=1, inplace=True)
+
+        # Aplicar el formato a todas las columnas excepto 'Viento', dejando solo un decimal
+        columnas_a_redondear = [col for col in self.df.columns if col != 'Viento']
+        self.df[columnas_a_redondear] = self.df[columnas_a_redondear].round(0)
 
     def obtener_dataframe(self):
         """Devuelve el DataFrame final"""
@@ -91,7 +96,7 @@ class InterpoladorViento:
             df_total = df_nuevo
 
         # Redondear a un decimal
-        df_total[nombre_columna] = df_total[nombre_columna].round(1) # .astype(int) esto le quita el 0 adicional  -   # .round(1) le deja un decimal mas exacto
+        df_total[nombre_columna] = df_total[nombre_columna].round(0) # .astype(int) esto le quita el 0 adicional  -   # .round(1) le deja un decimal mas exacto
 
         return df_total
 
@@ -142,47 +147,6 @@ class InterpoladorViento:
 
         #print(self.df_total.to_string(index=False))
 
-
-
-
-
-
-# Numero de vientos del wind chart original: 0, 5, 6, 10...
-viento_existentes_1 = [0,  2, 5, 6, 10, 11, 15, 16, 20, 21, 25, 26, 30, 31, 35, 36, 40, 41, 45, 46, 50]
-
-valores_existentes = [
-
-                        # VIENTO A FAVOR:
-
-                      [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -62],             # 00:00
-                      [0, -2, -5, -6, -20, -23, -30, -62, -64, -84],                                                          # 11:37  -  00:22
-                      [0, -2, -7, -8, -15, -17, -23, -24, -31, -33, -39, -41, -47, -48, -55, -57, -65, -66, -74, -76, -83],   # 11:15  -  00:45
-                      [0, 2, -7, -8, -17, -20, -25, -27, -34, -35, -42, -44, -49, -51, -57, -59, -66, -67, -75, -78, -82],    # 10:30  -  01:30
-                      [0, -2, -6, -7, -18, -19, -23, -24, -30, -32, -37, -39, -42, -45, -49, -50, -56, -57, -62, -65, -67],   # 9:45   -  02:15
-                      [0, -2, -6, -7, -11, -13, -17, -18, -22, -23, -25, -28, -30, -31, -35, -36, -40, -40, -44, -44, -46],   # 9:00   -  03:00
-                      [0, -1, -4, -4, -6, -7, -9, -10, -12, -13, -14, -14, -15, -15, -16, -16, -18, -18, -20, -20, -22],      # 8:15   -  03:45
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 3, 3, 4, 4, 5, 5, 6, 6, 7],                                        # 7:30   -  04:30
-                      [0, 1, 3, 3, 5, 6, 8, 9, 12, 12, 14, 15, 20, 21, 23, 25, 28, 30, 32, 32, 35],                           # 6:45   -  05:15
-
-
-                        # VIENTO EN CONTRA:
-
-                      [0, -3, 8, 9, 16, 18, 22, 25, 31, 32, 38, 40, 47, 49, 55, 57, 61, 63, 68, 70, 75],                                # 06:45
-                      [0, 4, 10, 12, 19, 22, 27, 29, 36, 38, 45, 47, 57, 59, 66, 68, 76, 77, 85, 87, 95],                               # 07:30
-                      [0, 3, 9, 11, 18, 21, 28, 30, 38, 40, 49, 51, 62, 64, 75, 77, 89, 90, 103, 105, 115],                             # 08:15
-                      [0, 1, 8, 9, 15, 18, 24, 26, 36, 37, 46, 48, 61, 63, 75, 80, 93, 96, 113, 120, 139],                              # 09:00
-                      [0, 3, 5, 5, 10, 12, 16, 18, 25, 26, 33, 35, 47, 60, 63, 66, 82, 87, 110, 118, 152],                              # 09:45
-                      [0, 1, 1, 2, 4, 6, 6, 7, 10, 11, 15, 17, 24, 25, 33, 37, 50, 52, 70, 80, 112],                                    # 10:30
-                      [0, 0, -2, -2, -4, -4, -6, -6, -8, -8, -8, -10, -8, -8, -6, -6, -5, 0, 0, 2, 10],                                 # 11:15
-                      [0, -1, -4, -4, -7, -8, -11, -12, -15, -16, -19, -20, -23, -23, -26, -27, -29, -30, -32, -33, -36],               # 11:37
-                      [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -62],             # 12:00
-
-                     ]
-
-nombres_columnas = ["(00:00)", "(00:22)", "(00:45)", "(01:30)", "(02:15)", "(03:00)", "(03:45)", "(04:30)", "(05:15)",
-                    "(06:45)", "(07:30)", "(08:15)", "(09:00)", "(09:45)", "(10:30)", "(11:15)", "(11:37)", "(12:00)"]
-
-
 def crear_df_completo():
 
     # Numero de vientos del wind chart original: 0, 5, 6, 10...
@@ -209,11 +173,11 @@ def crear_df_completo():
                       [0, 1, 1, 2, 4, 6, 6, 7, 10, 11, 15, 17, 24, 25, 33, 37, 50, 52, 70, 80, 112],                                    # 10:30
                       [0, 0, -2, -2, -4, -4, -6, -6, -8, -8, -8, -10, -8, -8, -6, -6, -5, 0, 0, 2, 10],                                 # 11:15
                       [0, -1, -4, -4, -7, -8, -11, -12, -15, -16, -19, -20, -23, -23, -26, -27, -29, -30, -32, -33, -36],               # 11:37
-                      [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -62],             # 12:00
+                      [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -61],             # 11:59
                      ]
 
     nombres_columnas = ["(00:00)", "(00:22)", "(00:45)", "(01:30)", "(02:15)", "(03:00)", "(03:45)", "(04:30)", "(05:15)",
-                    "(06:45)", "(07:30)", "(08:15)", "(09:00)", "(09:45)", "(10:30)", "(11:15)", "(11:37)", "(12:00)"]
+                    "(06:45)", "(07:30)", "(08:15)", "(09:00)", "(09:45)", "(10:30)", "(11:15)", "(11:37)", "(11:59)"]
 
 
     # Instancia el primer DataFrame con los nombres de la columna de la lista llamada: "nombres_columnas" 
@@ -246,10 +210,12 @@ def crear_df_completo():
     # Obtener el DataFrame final con las columnas intermedias e interpoladas
 
     df_completo = interpolador.obtener_dataframe()
+    #print(df_completo)
+
+    return df_completo
 
     # Mostrar el DataFrame resultante
     #print(f"Total de columnas en el DataFrame: {df_completo.shape[1]}")
-    print(df_completo)
 
 if __name__ == "__main__":
     df_completo = crear_df_completo()
