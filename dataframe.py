@@ -51,8 +51,8 @@ class InterpoladorDataFrame:
         self.df.interpolate(method='linear', axis=1, inplace=True)
 
         # Aplicar el formato a todas las columnas excepto 'Viento', dejando solo un decimal
-        columnas_a_redondear = [col for col in self.df.columns if col != 'Viento']
-        self.df[columnas_a_redondear] = self.df[columnas_a_redondear].round(0)
+        columnas_a_redondear = [col for col in self.df.columns]          #antes: [col for col in self.df.columns if col != 'Viento'] 
+        self.df[columnas_a_redondear] = self.df[columnas_a_redondear].round(0).astype(int) #.astype(int)
 
     def obtener_dataframe(self):
         """Devuelve el DataFrame final"""
@@ -63,20 +63,20 @@ class InterpoladorDataFrame:
 
 class InterpoladorViento:
 
-    def __init__(self, viento_existentes, valores_existentes, nombres_columnas):
-        self.viento_existentes = viento_existentes
-        self.valores_existentes = valores_existentes
-        self.nombres_columnas = nombres_columnas
+    def __init__(self, column_viento, columns_18, names_columns):
+        self.column_viento = column_viento
+        self.columns_18 = columns_18
+        self.names_columns = names_columns
         self.df_total = None
 
-    def generar_dataframe(self, viento_existentes_1, valor_exis_1, viento_faltantes, df_total=None, nombre_columna="Valor"):
+    def generar_dataframe(self, column_viento, valor_exis_1, viento_faltantes, df_total=None, nombre_columna="Valor"):
         # Interpolar los valores faltantes
-        result = interp1d(viento_existentes_1, valor_exis_1 , kind='linear', fill_value='extrapolate')
+        result = interp1d(column_viento, valor_exis_1 , kind='linear', fill_value='extrapolate')
         valores_interpolados = result(viento_faltantes)
 
         # Crear DataFrame para datos existentes
         df_existente = pd.DataFrame({
-            'Viento': viento_existentes_1,
+            'Viento': column_viento,
             nombre_columna: valor_exis_1 
         })
 
@@ -96,26 +96,26 @@ class InterpoladorViento:
             df_total = df_nuevo
 
         # Redondear a un decimal
-        df_total[nombre_columna] = df_total[nombre_columna].round(0) # .astype(int) esto le quita el 0 adicional  -   # .round(1) le deja un decimal mas exacto
-
+        df_total[nombre_columna] = df_total[nombre_columna].round(0).astype(int) # .astype(int) esto le quita el 0 adicional  -   # .round(1) le deja un decimal mas exacto
+        
         return df_total
 
 
     def crear_dataframe_total(self):
         # Definir el rango completo y los valores faltantes
         rango_completo = list(range(0, 51))
-        viento_faltantes = [num for num in rango_completo if num not in self.viento_existentes]
+        viento_faltantes = [num for num in rango_completo if num not in self.column_viento]
 
-        for i, nombre_columna in enumerate(self.nombres_columnas):
+        for i, nombre_columna in enumerate(self.names_columns):
             if i == 0:
-                self.df_total = self.generar_dataframe(self.viento_existentes, self.valores_existentes[i], viento_faltantes, nombre_columna=nombre_columna)
+                self.df_total = self.generar_dataframe(self.column_viento, self.columns_18[i], viento_faltantes, nombre_columna=nombre_columna)
             else:
                 if nombre_columna == "(00:22)":
                     excep_1 = [0, 2, 5, 6, 15, 16, 21, 40, 41, 50]
                     excep_1_ = [num for num in rango_completo if num not in excep_1]
-                    self.df_total = self.generar_dataframe(excep_1, self.valores_existentes[i], excep_1_, self.df_total, nombre_columna=nombre_columna)
+                    self.df_total = self.generar_dataframe(excep_1, self.columns_18[i], excep_1_, self.df_total, nombre_columna=nombre_columna)
                 else:
-                    self.df_total = self.generar_dataframe(self.viento_existentes, self.valores_existentes[i], viento_faltantes, self.df_total, nombre_columna=nombre_columna)
+                    self.df_total = self.generar_dataframe(self.column_viento, self.columns_18[i], viento_faltantes, self.df_total, nombre_columna=nombre_columna)
 
 
     def agregar_valor_6_00(self, valor_a, valor_b, grados_a, grados_b, grados_objetivo, nueva_columna):
@@ -150,10 +150,10 @@ class InterpoladorViento:
 def crear_df_completo():
 
     # Numero de vientos del wind chart original: 0, 5, 6, 10...
-    viento_existentes_1 = [0,  2, 5, 6, 10, 11, 15, 16, 20, 21, 25, 26, 30, 31, 35, 36, 40, 41, 45, 46, 50]
+    column_viento = [0,  2, 5, 6, 10, 11, 15, 16, 20, 21, 25, 26, 30, 31, 35, 36, 40, 41, 45, 46, 50]
 
-    valores_existentes = [
-                        # VIENTO A FAVOR:
+    columns_18 = [
+                        # VIENTO A FAVOR: total-->9
                       [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -62],             # 00:00
                       [0, -2, -5, -6, -20, -23, -30, -62, -64, -84],                                                          # 11:37  -  00:22
                       [0, -2, -7, -8, -15, -17, -23, -24, -31, -33, -39, -41, -47, -48, -55, -57, -65, -66, -74, -76, -83],   # 11:15  -  00:45
@@ -164,7 +164,7 @@ def crear_df_completo():
                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 3, 3, 4, 4, 5, 5, 6, 6, 7],                                        # 7:30   -  04:30
                       [0, 1, 3, 3, 5, 6, 8, 9, 12, 12, 14, 15, 20, 21, 23, 25, 28, 30, 32, 32, 35],                           # 6:45   -  05:15
 
-                        # VIENTO EN CONTRA:
+                        # VIENTO EN CONTRA: total-->9
                       [0, -3, 8, 9, 16, 18, 22, 25, 31, 32, 38, 40, 47, 49, 55, 57, 61, 63, 68, 70, 75],                                # 06:45
                       [0, 4, 10, 12, 19, 22, 27, 29, 36, 38, 45, 47, 57, 59, 66, 68, 76, 77, 85, 87, 95],                               # 07:30
                       [0, 3, 9, 11, 18, 21, 28, 30, 38, 40, 49, 51, 62, 64, 75, 77, 89, 90, 103, 105, 115],                             # 08:15
@@ -176,12 +176,12 @@ def crear_df_completo():
                       [0, -2, -5, -6, -10, -12, -17, -20, -23, -24, -28, -30, -35, -36, -42, -43, -48, -49, -54, -55, -61],             # 11:59
                      ]
 
-    nombres_columnas = ["(00:00)", "(00:22)", "(00:45)", "(01:30)", "(02:15)", "(03:00)", "(03:45)", "(04:30)", "(05:15)",
+    names_columns = ["(00:00)", "(00:22)", "(00:45)", "(01:30)", "(02:15)", "(03:00)", "(03:45)", "(04:30)", "(05:15)",
                     "(06:45)", "(07:30)", "(08:15)", "(09:00)", "(09:45)", "(10:30)", "(11:15)", "(11:37)", "(11:59)"]
 
 
     # Instancia el primer DataFrame con los nombres de la columna de la lista llamada: "nombres_columnas" 
-    df_original = InterpoladorViento(viento_existentes_1, valores_existentes, nombres_columnas)
+    df_original = InterpoladorViento(column_viento, columns_18, names_columns)
 
     # Crear el 1er DataFrame 
     df_original. crear_dataframe_total()
@@ -219,4 +219,3 @@ def crear_df_completo():
 
 if __name__ == "__main__":
     df_completo = crear_df_completo()
-    #print(df_completo)

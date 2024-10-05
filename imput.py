@@ -5,24 +5,27 @@ class CuadrosTexto(QWidget):
         super().__init__(parent)
         self.df = df                # Recibe el DataFrame desde la clase Reloj
         self.hora_actual = None     # Variable que guarda la hora siempre
+
         self.initUI()
 
     # Método para configurar la interfaz gráfica de los cuadros de texto
     def initUI(self):
         # Crear el campo de texto para mostrar la fuerza del viento
-        self.resultado = QLineEdit(self)  # Crea un campo de texto para mostrar la hora              -
-        self.resultado.setReadOnly(True)  # Establece el campo como de solo lectura                  -
-        self.resultado.setAlignment(Qt.AlignCenter)  # Alinea el texto al centro  
-        self.resultado.setFixedHeight(25)  # Establece una altura fija de 40 píxeles
-        self.resultado.setText("0.0")
+        self.resultado = QLineEdit(self)  # Crea un campo de texto para mostrar la hora
+        self.resultado.setReadOnly(True)  # Establece el campo como de solo lectura
+        #self.resultado.setAlignment(Qt.Al50ignCenter)  # Alinea el texto al centro 
+        self.resultado.setAlignment(Qt.AlignRight) 
+        self.resultado.setFixedHeight(28)  # Establece una altura fija en píxeles
+        self.resultado.setText(".")
         self.resultado.setStyleSheet(
         """
-        font-size: 17px; 
-        font-weight: bold; 
+        font-family: Verdana;
+        font-size: 25px;
+        font-weight: bold;
         color: #c8c8c8; 
-        background-color: #1c1d22; 
-        border: 1px solid black; 
-        border-radius: 4px; 
+        background-color: #1c1d22;
+        border: 1px solid #292a31;
+        border-radius: 0px; 
         text-align: center;
         """
         )
@@ -30,15 +33,15 @@ class CuadrosTexto(QWidget):
         # Crear el campo de texto para la entrada de vientos
         self.imput = CustomLineEdit(self)
         self.imput.setAlignment(Qt.AlignCenter) 
-        self.imput.setFixedHeight(25)
+        self.imput.setFixedHeight(28)
         self.imput.setStyleSheet(
         """
-        font-size: 17px; 
+        font-size: 15px; 
         font-weight: bold; 
-        color: #c8c8c8; 
-        background-color: red; 
-        border: 1px solid black; 
-        border-radius: 4px; 
+        color: #999999; 
+        background-color: #151515; 
+        border: 1px solid #1c1d22; 
+        border-radius: 0px; 
         text-align: center;
         """
         )
@@ -49,23 +52,22 @@ class CuadrosTexto(QWidget):
         
         # Conectar el evento de texto modificado
         self.imput.textChanged .connect(self.imput_textchanged)
-        # Instalar el event filter para la entrada de vientos (self.imput)
-        self.imput .installEventFilter(self)
 
 
-        # Crear un layout vertical
-        layout = QVBoxLayout()
-        layout .addWidget(self.resultado)           # Añade el campo de texto al layout
-        layout .addWidget(self.imput)               # Añade el campo de texto de entrada al layout
-        layout .setContentsMargins(30, 0, 30, 10)  # Establecer márgenes (izquierda, arriba, derecha, abajo)
-        self.setLayout(layout)                      # Establece el layout en el widget
+        # Crear organizador horizontal
+        layout = QGridLayout()
+        layout.addWidget(self.resultado, 0, 1)  # Fila 0, Columna 0
+        layout.addWidget(self.imput, 0, 0)  # Fila 0, Columna 1
 
-        self.imput.setFocusPolicy(Qt.StrongFocus)  # Permitir que reciba el foco
-        self.imput.setFocus()
+        layout.setColumnStretch(0, 1)  # Estirar la columna 0 (self.resultado)
+        layout.setColumnStretch(1, 1)  # Estirar la columna 1 (self.imput)
+        layout .setContentsMargins(9, 8, 9, 9)  # Establecer márgenes (izquierda, arriba, derecha, abajo)
+        self.setLayout(layout)
+
 
     # Método que ctualiza el resultado con el valor actual de entrada del input y la manecilla / SE LLAMA AUTOMATICAMENTE CUANDO ESCRIBIMOS EN IMPUT
     def imput_textchanged(self):
-        #print("ESCRIBIE")
+        print("imput escribiendo...")
 
         valor_imput = self.imput.text()  # Obtiene el texto de imput
 
@@ -90,19 +92,35 @@ class CuadrosTexto(QWidget):
                 self.resultado.setText("Fila fuera de rango")
                 self.imput.setText(valor_imput[:-1]) 
         else:
-            self.resultado.setText("0.0")  # Limpia el resultado si no es un número
+            self.resultado.setText(".")  # Limpia el resultado si no es un número
+            
+
+        # Reiniciar el temporizador cada vez que se escribe en el input
+        if not hasattr(self, 'timer'):
+            self.timer = QTimer(self)
+
+        # Detener el temporizador anterior si está corriendo
+        self.timer.stop()
+
+        # Conectar la limpieza del input al temporizador
+        self.timer.timeout.connect(self.limpiar_imput)
+
+        # Iniciar el temporizador de nuevo (después de 5 segundos sin cambios)
+        self.timer.start(10000)
+
+    def limpiar_imput(self):
+        self.imput.clear()  # Limpia el campo de texto
 
 
 
     # Metodo actualiza el cuadro de lectura (resultado) con el valor que hay en la fila que hay en imput y con el valor que tiene la manecilla para hallar la columna
     def event_resultado(self):
-            print("EVENT RESULTADO__CLASE CUADRO")
+            #print("EVENT RESULTADO__CLASE CUADRO")
 
-            #----------------------------------------------------------------------
             # CONSIGUE LA HORA Y LA COLUMNA DEL DATAFRAME
 
-            imput_valor = self.imput.text()  # Obtiene el texto del QLineEdit
-            reloj_valor = self.hora_actual  # Obtiene el valor del reloj ejem: (04:45)
+            imput_valor = self.imput.text()     # Obtiene el texto del QLineEdit
+            reloj_valor = self.hora_actual      # Obtiene el valor del reloj ejem: (04:45)
 
             if reloj_valor in self.df.columns:
 
@@ -115,27 +133,52 @@ class CuadrosTexto(QWidget):
                     self.resultado.setText(f"{valor}")
 
                 else:
-                    self.resultado.setText("0.0")
+                    self.resultado.setText(".")
             else:
                 # Si la columna no existe, mostrar un mensaje de error o algo por el estilo
                 self.resultado.setText("Horario no encontrado")
-            #----------------------------------------------------------------------
-            self.imput.setFocus()
-            #self.update()  # Llama a update si necesitas repintar
 
 
     # Metodo para actualizar columna hija con el valor de columna padre / se accese desde la clase Reloj
     def actualizar_hora(self, hora_reloj):
-        #print(" Actualizando columna hijo:", self.hora_actual)
+        print("Actualizando hora:   ", hora_reloj)
         self.hora_actual = hora_reloj  # Guarda el valor de columna para usarlo más tarde
 
 
 
 # Nueva clase que hereda de QLineEdit para sobreescribir mousePressEvent
 class CustomLineEdit(QLineEdit):
+    focus_signal = pyqtSignal(bool)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
+
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)  # Llama al evento original de QLineEdit
-        self.setCursorPosition(len(self.text()))  # Mueve el cursor al final del texto
+        super().mousePressEvent(event)              # Llama al evento original de QLineEdit
+        self.setCursorPosition(len(self.text()))    # Mueve el cursor al final del texto
+
+
+    # Metodo automatico de ejecucion cuando un
+    def focusInEvent(self, event):
+        #print("in")
+        # Indica que la ventana está en foco
+        self.signal = True
+
+        # Emitir la señal
+        self.focus_signal .emit(self.signal)
+        
+        # Llama al método original de QLineEdit
+        super().focusInEvent(event)
+
+
+    def focusOutEvent(self, event):
+        #print("out")
+        # Indica que la ventana está fuera de foco
+        self.signal = False
+
+        # Emitir la señal
+        self.focus_signal .emit(self.signal)
+        
+        # Llama al método original de QLineEdit
+        super().focusOutEvent(event)

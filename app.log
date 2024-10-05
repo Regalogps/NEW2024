@@ -1,0 +1,48 @@
+2024-10-04 08:59:03,942 - INFO - Iniciando la aplicación
+2024-10-04 08:59:03,952 - INFO - Inicializando la ventana principal
+2024-10-04 08:59:03,963 - DEBUG - Ventana mostrada correctamente
+2024-10-04 08:59:03,963 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 08:59:34,297 - INFO - Cerrando la ventana
+2024-10-04 09:01:24,767 - INFO - Iniciando la aplicación
+2024-10-04 09:01:24,777 - INFO - Inicializando la ventana principal
+2024-10-04 09:01:24,792 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:01:24,793 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:01:27,079 - INFO - Botón fue clicado
+2024-10-04 09:01:27,088 - DEBUG - Texto del botón cambiado a 'Clickeado!'
+2024-10-04 09:01:45,791 - INFO - Cerrando la ventana
+2024-10-04 09:01:54,550 - INFO - Iniciando la aplicación
+2024-10-04 09:01:54,561 - INFO - Inicializando la ventana principal
+2024-10-04 09:01:54,577 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:01:54,577 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:01:57,375 - INFO - Cerrando la ventana
+2024-10-04 09:02:04,433 - INFO - Iniciando la aplicación
+2024-10-04 09:02:04,443 - INFO - Inicializando la ventana principal
+2024-10-04 09:02:04,458 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:02:04,458 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:02:09,447 - INFO - Botón fue clicado
+2024-10-04 09:02:09,447 - DEBUG - Texto del botón cambiado a 'Clickeado!'
+2024-10-04 09:02:39,511 - INFO - Cerrando la ventana
+2024-10-04 09:15:29,845 - INFO - Iniciando la aplicación
+2024-10-04 09:15:29,855 - INFO - Inicializando la ventana principal
+2024-10-04 09:15:29,872 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:15:29,872 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:15:31,105 - INFO - Cerrando la ventana
+2024-10-04 09:15:31,105 - CRITICAL - La ventana se está cerrando. Operación crítica completada.
+2024-10-04 09:16:00,616 - INFO - Iniciando la aplicación
+2024-10-04 09:16:00,625 - INFO - Inicializando la ventana principal
+2024-10-04 09:16:00,639 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:16:00,640 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:16:01,793 - INFO - Cerrando la ventana
+2024-10-04 09:16:01,794 - CRITICAL - La ventana se está cerrando. Operación crítica completada.
+2024-10-04 09:16:06,243 - INFO - Iniciando la aplicación
+2024-10-04 09:16:06,253 - INFO - Inicializando la ventana principal
+2024-10-04 09:16:06,269 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:16:06,270 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:16:13,417 - INFO - Cerrando la ventana
+2024-10-04 09:16:13,418 - CRITICAL - La ventana se está cerrando. Operación crítica completada.
+2024-10-04 09:16:23,336 - INFO - Iniciando la aplicación
+2024-10-04 09:16:23,345 - INFO - Inicializando la ventana principal
+2024-10-04 09:16:23,361 - DEBUG - Ventana mostrada correctamente
+2024-10-04 09:16:23,361 - INFO - Entrando en el bucle principal de la aplicación
+2024-10-04 09:16:38,385 - INFO - Cerrando la ventana
+2024-10-04 09:16:38,385 - CRITICAL - La ventana se está cerrando. Operación crítica completada.
